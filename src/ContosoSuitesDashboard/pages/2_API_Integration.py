@@ -1,14 +1,26 @@
 import requests
 import streamlit as st
+import logging
 
 st.set_page_config(layout="wide")
 
 @st.cache_data
 def get_hotels():
-    """Return a list of hotels from the API."""
     api_endpoint = st.secrets["api"]["endpoint"]
-    response = requests.get(f"{api_endpoint}/Hotels", timeout=10)
-    return response
+    
+    try:
+        response = requests.get(f"{api_endpoint}/Hotels", timeout=10)
+        response.raise_for_status()  # Raise HTTPError for bad responses (4xx and 5xx)
+        
+        try:
+            return response.json()  # Attempt to parse JSON response
+        except requests.exceptions.JSONDecodeError as json_err:
+            logging.error(f"Failed to decode JSON. Response content: {response.text}")
+            raise json_err
+
+    except requests.exceptions.RequestException as req_err:
+        logging.error(f"Request to {api_endpoint}/Hotels failed: {req_err}")
+        raise req_err
 
 @st.cache_data
 def get_hotel_bookings(hotel_id):
