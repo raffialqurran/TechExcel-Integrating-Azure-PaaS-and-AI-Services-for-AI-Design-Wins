@@ -8,6 +8,13 @@ def get_hotels():
     """Return a list of hotels from the API."""
     api_endpoint = st.secrets["api"]["endpoint"]
     response = requests.get(f"{api_endpoint}/Hotels", timeout=10)
+    response = get_hotels()
+    try:
+        hotels_json = response.json()
+    except requests.exceptions.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+        print(f"Response content: {response.text}")
+        hotels_json = None
     return response
 
 @st.cache_data
